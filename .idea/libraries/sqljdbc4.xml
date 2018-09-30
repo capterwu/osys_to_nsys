@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="sqljdbc4">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../jar/fastjson-1.2.44.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../jar/jedis-2.9.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../jar/mysql-connector-java-8.0.12.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../jar/sqljdbc4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
