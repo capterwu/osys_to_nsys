@@ -138,7 +138,7 @@ public class UserAct {
             ps4.executeBatch();
             System.out.println("准备处理数据，请耐心等待，开始处理中......");
             mysqlconn.commit();
-            System.out.println("恭喜你，数据处理完毕。");
+            System.out.println("恭喜你，数据处理完毕了。");
         }catch (Exception e){
             mysqlconn.rollback();
             e.printStackTrace();
