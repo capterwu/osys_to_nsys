@@ -154,8 +154,8 @@ public class AgentAct {
                     "      ,[p_Name]\n" +
                     "      ,[p_Tel]\n" +
                     "      ,[AgentPath]\n" +
-                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Agent]\n" +
-//                    "  FROM [djx_nopublic_20180927].[dbo].[Plug_GX_Agent]\n" +
+//                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Agent]\n" +
+                    "  FROM [djx_nopublic_20180927].[dbo].[Plug_GX_Agent]\n" +
                     "  WHERE [AdminID] > 1";
             ps = sqlconn.prepareStatement(sql);
             rs = ps.executeQuery();
@@ -273,7 +273,6 @@ public class AgentAct {
                 updateAgentRelation(bean.getOid(),agent_relation_id,mysqlconn);  //更新代理商上级代理商ID
             }
             System.out.println("代理商数据更新完毕!......");
-            System.out.println("恭喜你，数据处理完毕。");
         }catch (SQLException e){
             mysqlconn.rollback();
             e.printStackTrace();

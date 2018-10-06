@@ -10,8 +10,8 @@ public class ShopBean {
     private String s_coordinate;
     private String registtime;
     private int free_usetime;
-    private double rent_cost;
-    private double high_cost;
+    private int rent_cost;
+    private int high_cost;
     private int plat_extract;
     private int province_agent;
     private int province_extract;
@@ -34,6 +34,15 @@ public class ShopBean {
     private String plat_oid;
     private String temp_area;
     private String address;
+    private int id;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getAddress() {
         return address;
@@ -163,19 +172,19 @@ public class ShopBean {
         this.free_usetime = free_usetime;
     }
 
-    public double getRent_cost() {
+    public int getRent_cost() {
         return rent_cost;
     }
 
-    public void setRent_cost(double rent_cost) {
+    public void setRent_cost(int rent_cost) {
         this.rent_cost = rent_cost;
     }
 
-    public double getHigh_cost() {
+    public int getHigh_cost() {
         return high_cost;
     }
 
-    public void setHigh_cost(double high_cost) {
+    public void setHigh_cost(int high_cost) {
         this.high_cost = high_cost;
     }
 
