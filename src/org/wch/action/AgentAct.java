@@ -3,6 +3,7 @@ package org.wch.action;
 import org.wch.bean.AgentBean;
 import org.wch.db.DbConnection;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,14 +27,12 @@ public class AgentAct {
     public static int getAreaId(String areaName, Connection mysql_conn){
         int area_id = 0;
         try {
-            if(areaName.equals("")) {
                 String sql = "SELECT id from area where cn_name like '%" + areaName + "%'";
                 PreparedStatement arePre = mysql_conn.prepareStatement(sql);
                 ResultSet areRs = arePre.executeQuery();
                 while (areRs.next()) {
                     area_id = areRs.getInt(1);
                 }
-            }
         }catch (SQLException e){
             e.printStackTrace();
         }finally {
@@ -62,7 +61,7 @@ public class AgentAct {
 
     //根据openid找代理商余额
     public static Double getAgentOldMoney(String openid,Connection sqlconn){
-        double money = 0.00;
+        double money = 0.0;
         try {
             String sql = "select  " +
                     "a.p_Account_TiCheng,a.p_Account_TiCheng_Tui,a.p_Account_Shop,a.p_Account_Shop_Tui from Plug_GX_User as a" +
@@ -75,7 +74,12 @@ public class AgentAct {
                 double p_Account_TiCheng_Tui = rs.getDouble("p_Account_TiCheng_Tui");
                 double p_Account_Shop = rs.getDouble("p_Account_Shop");
                 double p_Account_Shop_Tui = rs.getDouble("p_Account_Shop_Tui");
-                money = p_Account_Shop+p_Account_Shop_Tui+p_Account_TiCheng+p_Account_TiCheng_Tui;
+                money = getDoubleNum(p_Account_TiCheng)+getDoubleNum(p_Account_TiCheng_Tui)
+                        +getDoubleNum(p_Account_Shop)+getDoubleNum(p_Account_Shop_Tui);
+                if(money<0){
+                    money = 0;
+                }
+                money = getDoubleNum(money);
             }
         }catch (SQLException e){
             e.printStackTrace();
@@ -83,6 +87,13 @@ public class AgentAct {
             DbConnection.closeDB();
         }
         return  money;
+    }
+
+    //保留金额两位处理方法
+    public static  double getDoubleNum(double temp){
+        BigDecimal bg = new BigDecimal(temp);
+        double f1 = bg.setScale(1, BigDecimal.ROUND_HALF_DOWN).doubleValue();
+        return f1;
     }
 
     //更新代理用户分组
@@ -143,9 +154,9 @@ public class AgentAct {
                     "      ,[p_Name]\n" +
                     "      ,[p_Tel]\n" +
                     "      ,[AgentPath]\n" +
-//                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Agent]\n" +
-                    "  FROM [djx_nopublic_20180927].[dbo].[Plug_GX_Agent]\n" +
-                    "  WHERE [AdminID] = 7";
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Agent]\n" +
+//                    "  FROM [djx_nopublic_20180927].[dbo].[Plug_GX_Agent]\n" +
+                    "  WHERE [AdminID] > 1";
             ps = sqlconn.prepareStatement(sql);
             rs = ps.executeQuery();
             System.out.println("开始读取旧的用户数据，总共有：");
@@ -159,7 +170,6 @@ public class AgentAct {
                 bean.setTemp_area(rs.getString("p_Dist"));
                 bean.setContact_name(rs.getString("p_Name"));
                 bean.setContact_phone(rs.getString("p_Tel"));
-                bean.setIsblock(rs.getInt("IsLock"));
                 bean.setLast_login(rs.getString("LastLoginDate"));
                 bean.setLogin_nums(rs.getString("LoginTimes"));
                 bean.setOid(rs.getString("Admin_OpenID"));
@@ -176,6 +186,12 @@ public class AgentAct {
                     bean.setGroup(6);
                 }else if(group.equals("平台")){
                     bean.setGroup(7);
+                }
+                int isblock = rs.getInt("IsLock");
+                if(isblock == 0){
+                    bean.setIsblock(1);
+                }else{
+                    bean.setIsblock(2);
                 }
                 agentBeans.add(bean);
             }
@@ -214,7 +230,8 @@ public class AgentAct {
                 if(area.equals("")){
                     ps2.setInt(7,440114);
                 }else{
-                    int area_id =  getAreaId(area,mysqlconn);
+                    String area_name = area.substring(0,2);
+                    int area_id =  getAreaId(area_name,mysqlconn);
                     ps2.setInt(7,area_id);
                 }
 
@@ -232,7 +249,7 @@ public class AgentAct {
 
                 //开始处理代理商agent_wallet数据
                 double agent_moeny = getAgentOldMoney(bean.getOid(),mssqlconn);
-                //System.out.printf("钱包余额:"+agent_moeny);
+                System.out.println("代理商OID："+bean.getOid()+" 钱包余额:"+agent_moeny);
                 ps3.setInt(1,bean.getId());
                 ps3.setDouble(2,agent_moeny);
                 ps3.setDouble(3,0.0);
@@ -252,7 +269,7 @@ public class AgentAct {
             for(int i = 0;i<agentBeanList.size();i++){
                 AgentBean bean = agentBeanList.get(i);
                 int agent_relation_id = getAgentId(bean.getTemp_agent_oid(),mysqlconn);    //查找用户上级代理商ID
-                System.out.println("agent_relation_id:"+agent_relation_id);
+              //  System.out.println("agent_relation_id:"+agent_relation_id);
                 updateAgentRelation(bean.getOid(),agent_relation_id,mysqlconn);  //更新代理商上级代理商ID
             }
             System.out.println("代理商数据更新完毕!......");

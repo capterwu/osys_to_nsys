@@ -26,6 +26,78 @@ public class ShopBean {
     private double shop_profit_money;
     private int isblock;
     private int isquick;
+    private String province_oid;
+    private String city_oid;
+    private String area_oid;
+    private String sales_oid;
+    private String shop_oid;
+    private String plat_oid;
+    private String temp_area;
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getProvince_oid() {
+        return province_oid;
+    }
+
+    public void setProvince_oid(String province_oid) {
+        this.province_oid = province_oid;
+    }
+
+    public String getCity_oid() {
+        return city_oid;
+    }
+
+    public void setCity_oid(String city_oid) {
+        this.city_oid = city_oid;
+    }
+
+    public String getArea_oid() {
+        return area_oid;
+    }
+
+    public void setArea_oid(String area_oid) {
+        this.area_oid = area_oid;
+    }
+
+    public String getSales_oid() {
+        return sales_oid;
+    }
+
+    public void setSales_oid(String sales_oid) {
+        this.sales_oid = sales_oid;
+    }
+
+    public String getShop_oid() {
+        return shop_oid;
+    }
+
+    public void setShop_oid(String shop_oid) {
+        this.shop_oid = shop_oid;
+    }
+
+    public String getPlat_oid() {
+        return plat_oid;
+    }
+
+    public void setPlat_oid(String plat_oid) {
+        this.plat_oid = plat_oid;
+    }
+
+    public String getTemp_area() {
+        return temp_area;
+    }
+
+    public void setTemp_area(String temp_area) {
+        this.temp_area = temp_area;
+    }
 
     public String getCode() {
         return code;
