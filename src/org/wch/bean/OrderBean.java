@@ -14,9 +14,108 @@ public class OrderBean {
     private int bw_shop;
     private int bk_shop;
     private String bk_time;
+    private String bw_time;
     private int use_minute;
     private double bill;
     private double unit_price;
+    private double sales_money;
+    private double plat_money;
+    private double area_money;
+    private double city_money;
+    private double province_money;
+    private double shop_moeny;
+    private String moid;
+    private String equip_code;
+    private String shop_code;
+    private String re_shop_code;
+
+    public String getRe_shop_code() {
+        return re_shop_code;
+    }
+
+    public void setRe_shop_code(String re_shop_code) {
+        this.re_shop_code = re_shop_code;
+    }
+
+    public String getBw_time() {
+        return bw_time;
+    }
+
+    public void setBw_time(String bw_time) {
+        this.bw_time = bw_time;
+    }
+
+    public String getShop_code() {
+        return shop_code;
+    }
+
+    public void setShop_code(String shop_code) {
+        this.shop_code = shop_code;
+    }
+
+    public String getEquip_code() {
+        return equip_code;
+    }
+
+    public void setEquip_code(String equip_code) {
+        this.equip_code = equip_code;
+    }
+
+    public String getMoid() {
+        return moid;
+    }
+
+    public void setMoid(String moid) {
+        this.moid = moid;
+    }
+
+    public double getSales_money() {
+        return sales_money;
+    }
+
+    public void setSales_money(double sales_money) {
+        this.sales_money = sales_money;
+    }
+
+    public double getPlat_money() {
+        return plat_money;
+    }
+
+    public void setPlat_money(double plat_money) {
+        this.plat_money = plat_money;
+    }
+
+    public double getArea_money() {
+        return area_money;
+    }
+
+    public void setArea_money(double area_money) {
+        this.area_money = area_money;
+    }
+
+    public double getCity_money() {
+        return city_money;
+    }
+
+    public void setCity_money(double city_money) {
+        this.city_money = city_money;
+    }
+
+    public double getProvince_money() {
+        return province_money;
+    }
+
+    public void setProvince_money(double province_money) {
+        this.province_money = province_money;
+    }
+
+    public double getShop_moeny() {
+        return shop_moeny;
+    }
+
+    public void setShop_moeny(double shop_moeny) {
+        this.shop_moeny = shop_moeny;
+    }
 
     public int getId() {
         return id;

@@ -1,11 +1,15 @@
 package org.wch.action;
 
+import org.wch.bean.EquipBean;
 import org.wch.bean.ShopBean;
 import org.wch.db.DbConnection;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
+import java.util.Random;
 
 public class ShopAct {
 
@@ -53,6 +57,173 @@ public class ShopAct {
         return agent_id;
     }
 
+    //生成店铺编号
+    public synchronized static String generateRankShopCode() {
+        SimpleDateFormat formatter = new SimpleDateFormat("yy");
+        String dateString = formatter.format(new Date());
+        String rankShopCode = "SH" + dateString;
+        rankShopCode +=(System.currentTimeMillis()+"").substring(11,13)+getRandomInt(2)+getRandomInt(3);
+        return rankShopCode;
+    }
+
+    public static String getRandomInt(Integer length) {
+        String str = "";
+        Random code = new Random();
+        while(length>0){
+            int ram = code.nextInt(9);
+            str += ram;
+            length--;
+        }
+       return str;
+    }
+
+    //根据店铺名称查找店铺ID
+    public static String getShopCodeByName(String shopName,Connection mysql_conn){
+        String shop_code = "";
+        try{
+            String sql = "select code from rank_shop where s_name='"+shopName+"'";
+            PreparedStatement shopPre = mysql_conn.prepareStatement(sql);
+            ResultSet shopRs = shopPre.executeQuery();
+            while(shopRs.next()) {
+                shop_code = shopRs.getString(1);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+        System.out.println("shop_name:"+shopName+" ; shop_code:"+shop_code);
+        return shop_code;
+    }
+
+    //根据设备号查找设备二维码编号ID
+    public static int getEquipQrCodeId(String equip_code,Connection mysql_conn){
+        int equip_id = 0;
+        try{
+            String sql = "SELECT\n" +
+                    "qrcode_store.ID,\n" +
+                    "equipinfo.`CODE`,\n" +
+                    "qrcode_store.QRCODE\n" +
+                    "FROM\n" +
+                    "equipinfo\n" +
+                    "INNER JOIN qrcode_store ON equipinfo.ID = qrcode_store.EQUIP\n" +
+                    "WHERE\n" +
+                    "equipinfo.`CODE` = ?";
+            PreparedStatement equipPre = mysql_conn.prepareStatement(sql);
+            equipPre.setString(1,equip_code);
+            ResultSet euquipRs = equipPre.executeQuery();
+            while (euquipRs.next()){
+                equip_id = euquipRs.getInt("ID");
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+        return equip_id;
+    }
+
+    //查找旧系统店铺设备数据
+    public static List getEquipByShopName(String shopName,Connection mssqlconn){
+        List<EquipBean> equipBeanList = new ArrayList<>();
+        try{
+            String sql = "SELECT [p_id]\n" +
+                    "      ,[p_DeviceID]\n" +
+                    "      ,[p_ShopName]\n" +
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Device] WHERE [p_ShopName]='"+shopName+"'" +
+                    " and [p_DeviceID]  in (SELECT  [p_DeviceID] FROM [DJX_NoPublic].[dbo].[Plug_GX_QrCode])";
+            ps = mssqlconn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            System.out.println("开始读取旧的店铺设备数据：");
+            while(rs.next()) {
+                EquipBean equipBean = new EquipBean();
+                equipBean.setCode(rs.getString("p_DeviceID"));
+                equipBean.setShop_name(rs.getString("p_ShopName"));
+                equipBeanList.add(equipBean);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+        return equipBeanList;
+    }
+
+    //查找旧系统店铺编号设备数据
+    public static List getEquipByShopCode(String shopCode,Connection mssqlconn){
+        List<EquipBean> equipBeanList = new ArrayList<>();
+        try{
+            String sql = "SELECT [p_id],[p_ShopID]\n" +
+                    "      ,[p_DeviceID]\n" +
+                    "      ,[p_ShopName]\n" +
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Device] WHERE [p_ShopID]='"+shopCode+"'" +
+                    " and [p_DeviceID]  in (SELECT  [p_DeviceID] FROM [DJX_NoPublic].[dbo].[Plug_GX_QrCode])";
+            ps = mssqlconn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            System.out.println("开始读取旧的店铺设备数据：");
+            while(rs.next()) {
+                EquipBean equipBean = new EquipBean();
+                equipBean.setCode(rs.getString("p_DeviceID"));
+                equipBean.setShop_name(rs.getString("p_ShopName"));
+                equipBeanList.add(equipBean);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+        return equipBeanList;
+    }
+
+
+    public static String setNowDate() {
+        SimpleDateFormat aDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String nowDate = aDate.format(new Date());
+        return nowDate;
+    }
+
+    //处理新系统店铺设备数据
+    public  static void pushOldShopEquipToNew(Connection mssqlconn,Connection mysqlconn) throws SQLException{
+        long startTime=System.currentTimeMillis();   //获取开始时间
+        List<ShopBean> shopBeanList = getOdbShopData(mssqlconn);
+        try{
+            String sql = "INSERT into shop_equip(code,registtime,operator,qrcode_store) values (?,?,?,?)";
+            System.out.println("此次要处理设备的店铺数据记录总共有: "+shopBeanList.size()+" 条");
+            ps2 = mysqlconn.prepareStatement(sql);
+            mysqlconn.setAutoCommit(false);
+            mysqlconn.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            for(int i=0;i<shopBeanList.size();i++){
+                ShopBean sb = shopBeanList.get(i);
+              //  List<EquipBean> equipBeanList = getEquipByShopName(sb.getS_name(),mssqlconn);
+                List<EquipBean> equipBeanList = getEquipByShopCode(sb.getCode(),mssqlconn);
+                String shop_name = sb.getS_name();
+                String shop_code = getShopCodeByName(shop_name,mysqlconn);
+                System.out.println("开始处理店铺:"+shop_code+" , "+shop_name+" 的设备数据,该店铺有"+equipBeanList.size()+" 台设备");
+                for(int k=0;k<equipBeanList.size();k++){
+                    EquipBean equipBean = equipBeanList.get(k);
+                    int qrcode_store = getEquipQrCodeId(equipBean.getCode(),mysqlconn);
+                    System.out.println("设备:"+equipBean.getCode()+" ; "+qrcode_store);
+                    ps2.setString(1,shop_code);
+                    ps2.setString(2,setNowDate());
+                    ps2.setInt(3,1);
+                    ps2.setInt(4,qrcode_store);
+                    ps2.addBatch();
+                }
+                System.out.println("该店铺设备数据准备完毕，准备导入.......");
+                ps2.executeBatch();
+                mysqlconn.commit();
+                System.out.println("该店铺设备数据导入完毕.");
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+        long endTime=System.currentTimeMillis(); //获取结束时间
+        System.out.println("程序运行时间： "+((endTime-startTime)/1000)/60+"分钟");
+    }
+
+
     //查询店铺旧系统数据
     public static List getOdbShopData(Connection mssqlconn){
         List<ShopBean> shopBeanList = new ArrayList<>();
@@ -95,13 +266,16 @@ public class ShopAct {
                     "      ,[p_AgentMoney4]\n" +
                     "      ,[p_AgentMoney5]\n" +
                     "      ,[p_ShopBaseMoney]\n" +
-                    "  FROM [djx_nopublic_20180927].[dbo].[Plug_GX_Shop]";
+                    "  FROM [djx_nopublic].[dbo].[Plug_GX_Shop]";
             ps = mssqlconn.prepareStatement(sql);
             rs = ps.executeQuery();
             System.out.println("开始读取旧的店铺数据，总共有：");
             while(rs.next()) {
                 ShopBean sb = new ShopBean();
                 sb.setId(rs.getInt("p_id"));
+              //  sb.setCode(rs.getString("p_NewID"));
+              //  String shop_code = generateRankShopCode();
+             //   sb.setCode(shop_code);
                 sb.setCode(rs.getString("p_NewID"));
                 sb.setS_name(rs.getString("p_ShopName"));
                 sb.setS_phone(rs.getString("p_Tel"));
@@ -109,6 +283,7 @@ public class ShopAct {
                 sb.setAddress(rs.getString("p_Address"));
                 sb.setS_coordinate(rs.getString("p_Lat")+","+rs.getString("p_Lng"));
                 sb.setRegisttime(rs.getString("p_AddTime"));
+                sb.setLogo(rs.getString("p_Logo"));
                 sb.setFree_usetime(rs.getInt("p_FreeTime"));
                 sb.setHigh_cost(rs.getInt("p_Price_Max"));
                 sb.setRent_cost(rs.getInt("p_Price"));
@@ -126,6 +301,7 @@ public class ShopAct {
                 sb.setShop_profit_money(rs.getInt("p_ShopBaseMoney"));
                 sb.setIsblock(2);
                 sb.setIsquick(1);
+                shopBeanList.add(sb);
             }
         }catch (SQLException e){
             e.printStackTrace();
@@ -216,10 +392,11 @@ public class ShopAct {
                 ps2.setString(28, sb.getRegisttime());
                 ps2.setInt(29, 1);
                 ps2.addBatch();
+               // ps2.execute();
+                System.out.println("店铺:"+sb.getS_name()+" 处理完毕!");
             }
-            System.out.println("店铺数据正在准备中......");
-            ps2.executeBatch();
-            mysqlconn.commit();
+              ps2.executeBatch();
+              mysqlconn.commit();
             System.out.println("店铺数据更新完毕!......");
         }catch (SQLException e){
             e.printStackTrace();
@@ -230,11 +407,19 @@ public class ShopAct {
         System.out.println("程序运行时间： "+((endTime-startTime)/1000)/60+"分钟");
     }
 
+
     public String beginOldShopToNew(Connection sqlconn,Connection mysqlconn) throws SQLException {
         sqlconn = DbConnection.getSqlConnection();
         mysqlconn= DbConnection.getMysqlConnection();
         pushOldShopToNew(sqlconn, mysqlconn,"");
         return "店铺数据已经全部导入。";
+    }
+
+    public String beginShopEquipToNew(Connection sqlconn,Connection mysqlconn) throws SQLException{
+        sqlconn = DbConnection.getSqlConnection();
+        mysqlconn= DbConnection.getMysqlConnection();
+        pushOldShopEquipToNew(sqlconn, mysqlconn);
+        return "店铺设备数据已经全部导入。";
     }
 
 }

@@ -154,8 +154,8 @@ public class AgentAct {
                     "      ,[p_Name]\n" +
                     "      ,[p_Tel]\n" +
                     "      ,[AgentPath]\n" +
-//                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Agent]\n" +
-                    "  FROM [djx_nopublic_20180927].[dbo].[Plug_GX_Agent]\n" +
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Agent]\n" +
+//                    "  FROM [djx_nopublic_20180927].[dbo].[Plug_GX_Agent]\n" +
                     "  WHERE [AdminID] > 1";
             ps = sqlconn.prepareStatement(sql);
             rs = ps.executeQuery();
