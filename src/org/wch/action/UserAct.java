@@ -40,9 +40,9 @@ public class UserAct {
                 userBean.setId(rs.getInt("p_ID"));
                 userBean.setRegistime(rs.getString("p_Group_Time"));
                 String userType = rs.getString("p_UserType");
-                if(userType.equals("微信用户") || !userType.isEmpty()){
+                if(userType.equals("微信用户") ){
                     userBean.setUserType(1);
-                }else if(userType.equals("支付宝用户") || !userType.isEmpty()){
+                }else if(userType.equals("支付宝用户")){
                     userBean.setUserType(2);
                 }
                 String sex = rs.getString("p_WxSex");
@@ -107,6 +107,7 @@ public class UserAct {
                 ps2.setString(2,userBean.getOpenid());
                 ps2.setString(3,userBean.getNickname());
                 ps2.setString(4,userBean.getHeadPic());
+                System.out.println("userBean.getUserType():"+userBean.getUserType());
                 ps2.setInt(5,userBean.getUserType());
                 ps2.setInt(6,userBean.getGroupType());
                 ps2.setInt(7,userBean.getSex());

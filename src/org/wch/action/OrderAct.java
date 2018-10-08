@@ -1,5 +1,6 @@
 package org.wch.action;
 
+import org.wch.bean.DepositBean;
 import org.wch.bean.OrderBean;
 import org.wch.db.DbConnection;
 
@@ -110,7 +111,7 @@ public class OrderAct {
                     "      ,[p_AgentMoney4]\n" +
                     "      ,[p_AgentMoney5]\n" +
                     "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Buy]" +
-                    "  where p_OrderID not in (SELECT [p_OrderID] FROM [DJX_NoPublic].[dbo].[Plug_GX_Buy] GROUP BY [p_OrderID] HAVING (COUNT(*)>1) )";
+                    "  where p_OrderID not in (SELECT [p_OrderID] FROM [DJX_NoPublic].[dbo].[Plug_GX_Buy_1] GROUP BY [p_OrderID] HAVING (COUNT(*)>1) )";
             ps = mssqlconn.prepareStatement(sql);
             rs = ps.executeQuery();
             System.out.println("开始读取订单数据：");
@@ -172,6 +173,32 @@ public class OrderAct {
             DbConnection.closeDB();
         }
         return orderBeanList;
+    }
+
+    //根据旧系统单号查询旧的押金记录
+    public static List getDepositByOrderNum(String ordercode,Connection mssqlconn) throws SQLException{
+        List<DepositBean> depositBeanList = new ArrayList<>();
+        try{
+            String sql = "SELECT [p_OrderID]\n" +
+                    "      ,[p_Yajin]\n" +
+                    "      ,[p_Pay]\n" +
+                    "      ,[p_Yue] \n" +
+                    "      ,[p_Statu]\n" +
+                    "      ,[p_AddTime]\n" +
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Yajin]\n" +
+                    "  WHERE [p_OrderID]='"+ordercode+"'";
+            ps = mssqlconn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                DepositBean db = new DepositBean();
+                db.setAccrual(rs.getDouble("p_Yajin"));
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+        return depositBeanList;
     }
 
     //导入旧系统订单数据以及分成数据
@@ -253,6 +280,7 @@ public class OrderAct {
         long endTime=System.currentTimeMillis(); //获取结束时间
         System.out.println("程序运行时间： "+((endTime-startTime)/1000)/60+"分钟");
     }
+
 
     public String beginOldOrderToNew(Connection sqlconn,Connection mysqlconn) throws SQLException {
         sqlconn = DbConnection.getSqlConnection();
