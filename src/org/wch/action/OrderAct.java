@@ -19,6 +19,7 @@ public class OrderAct {
     static PreparedStatement ps4 = null;
     static PreparedStatement ps5 = null;
     static PreparedStatement ps6 = null;
+    static PreparedStatement ps7 = null;
     static ResultSet rs = null;
 
 
@@ -27,8 +28,8 @@ public class OrderAct {
         int mid = 0;
         try{
             String sql = "select id from member where openid='"+openid+"'";
-            ps5 = mysql_conn.prepareStatement(sql);
-            ResultSet idRs = ps5.executeQuery();
+            ps7 = mysql_conn.prepareStatement(sql);
+            ResultSet idRs = ps7.executeQuery();
             while(idRs.next()){
                 mid = idRs.getInt(1);
             }
@@ -45,8 +46,8 @@ public class OrderAct {
         int eid = 0;
         try{
             String sql = "select id from equipinfo where code='"+code+"'";
-            ps4 = mysql_conn.prepareStatement(sql);
-            ResultSet idRs2 = ps4.executeQuery();
+            ps6 = mysql_conn.prepareStatement(sql);
+            ResultSet idRs2 = ps6.executeQuery();
             while(idRs2.next()){
                 eid = idRs2.getInt(1);
             }
@@ -78,7 +79,7 @@ public class OrderAct {
 
 
     //获取旧订单数据
-    public static List getOldOrderData(Connection mssqlconn){
+    public static List getOldOrderData(Connection mssqlconn,int begin,int end){
         List<OrderBean> orderBeanList = new ArrayList<>();
         try{
             String sql = "SELECT  [p_id]\n" +
@@ -110,8 +111,9 @@ public class OrderAct {
                     "      ,[p_AgentMoney3]\n" +
                     "      ,[p_AgentMoney4]\n" +
                     "      ,[p_AgentMoney5]\n" +
-                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Buy]" +
-                    "  where p_OrderID not in (SELECT [p_OrderID] FROM [DJX_NoPublic].[dbo].[Plug_GX_Buy_1] GROUP BY [p_OrderID] HAVING (COUNT(*)>1) )";
+                    "  FROM [DJX_NoPublic_20181008].[dbo].[Plug_GX_Buy_1]" +
+                    "  where p_OrderID not in (SELECT [p_OrderID] FROM [DJX_NoPublic_20181008].[dbo].[Plug_GX_Buy_1] GROUP BY [p_OrderID] HAVING (COUNT(*)>1) )" +
+                    "  AND p_id between "+ begin+" and "+end;
             ps = mssqlconn.prepareStatement(sql);
             rs = ps.executeQuery();
             System.out.println("开始读取订单数据：");
@@ -133,8 +135,10 @@ public class OrderAct {
                 String payState = rs.getString("p_PayState");
                 if(orderStatus.equals("租借中")) {
                     ob.setOrder_status(1);
+                    ob.setPay_status(1);
                 }else if(orderStatus.equals("已归还")){
                     ob.setOrder_status(2);
+                    ob.setPay_status(2);
                     double bill = rs.getDouble("p_PayPrice");
                     double shop_money = (rs.getDouble("p_AgentMoney")/100)*bill;
                     double sales_money = (rs.getDouble("p_AgentMoney1")/100)*bill;
@@ -150,14 +154,16 @@ public class OrderAct {
                     ob.setPlat_money(plat_money);
                 }else if(orderStatus.equals("已撤销")){
                     ob.setOrder_status(3);
+                    ob.setPay_status(1);
                 }else{
                     ob.setOrder_status(4);
-                }
-                if(payState.equals("已支付")){
-                    ob.setPay_status(2);
-                }else{
                     ob.setPay_status(1);
                 }
+//                if(payState.equals("已支付")){
+//                    ob.setPay_status(2);
+//                }else{
+//                    ob.setPay_status(1);
+//                }
                 ob.setBw_time(rs.getString("p_BorrowTime"));
                 ob.setBk_time(rs.getString("p_ReturnTime"));
                 ob.setRe_shop_code(rs.getString("p_ReturnShopID"));
@@ -176,35 +182,37 @@ public class OrderAct {
     }
 
     //根据旧系统单号查询旧的押金记录
-    public static List getDepositByOrderNum(String ordercode,Connection mssqlconn) throws SQLException{
-        List<DepositBean> depositBeanList = new ArrayList<>();
-        try{
-            String sql = "SELECT [p_OrderID]\n" +
-                    "      ,[p_Yajin]\n" +
-                    "      ,[p_Pay]\n" +
-                    "      ,[p_Yue] \n" +
-                    "      ,[p_Statu]\n" +
-                    "      ,[p_AddTime]\n" +
-                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Yajin]\n" +
-                    "  WHERE [p_OrderID]='"+ordercode+"'";
-            ps = mssqlconn.prepareStatement(sql);
-            rs = ps.executeQuery();
-            while(rs.next()){
-                DepositBean db = new DepositBean();
-                db.setAccrual(rs.getDouble("p_Yajin"));
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }finally {
-            DbConnection.closeDB();
-        }
-        return depositBeanList;
-    }
+//    public static List getDepositByOrderNum(String ordercode,Connection mssqlconn) throws SQLException{
+//        List<DepositBean> depositBeanList = new ArrayList<>();
+//        try{
+//            String sql = "SELECT [p_OrderID]\n" +
+//                    "      ,[p_Yajin]\n" +
+//                    "      ,[p_Pay]\n" +
+//                    "      ,[p_Yue] \n" +
+//                    "      ,[p_Statu]\n" +
+//                    "      ,[p_AddTime]\n" +
+//                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Yajin]\n" +
+//                    "  WHERE [p_OrderID]='"+ordercode+"'";
+//            ps = mssqlconn.prepareStatement(sql);
+//            rs = ps.executeQuery();
+//            while(rs.next()){
+//                DepositBean db = new DepositBean();
+//                db.setAccrual(rs.getDouble("p_Yajin"));
+//                db.setChangeTime(rs.getString("p_AddTime"));
+//              //  db.setCurrent();
+//            }
+//        }catch (SQLException e){
+//            e.printStackTrace();
+//        }finally {
+//            DbConnection.closeDB();
+//        }
+//        return depositBeanList;
+//    }
 
     //导入旧系统订单数据以及分成数据
-    public  static void pushOldOrderToNew(Connection mssqlconn,Connection mysqlconn) throws SQLException{
+    public  static void pushOldOrderToNew(Connection mssqlconn,Connection mysqlconn,int begin,int end) throws SQLException{
         long startTime=System.currentTimeMillis();   //获取开始时间
-        List<OrderBean> orderBeanList = getOldOrderData(mssqlconn);
+        List<OrderBean> orderBeanList = getOldOrderData(mssqlconn,begin,end);
         try{
             //插入订单数据
             String sql = "INSERT into orderinfo(code,member,ordertime,equip,order_status\n" +
@@ -220,15 +228,23 @@ public class OrderAct {
                     "VALUES(?,?,?,?,?\n" +
                     ",?,?,?,?,?\n" +
                     ",?,?,?,?)";
+            //插入押金记录明细;
+            String sql3 = "INSERT INTO member_deposit_record(mid,numbers,accrual,tally_type,odd_numbers,trading_time,trading_type)\n" +
+                    " values (?,?,?,?,?,?,?)";
+            //插入押金记录表;
+            String sql4 = "INSERT INTO MEMBER_DEPOSIT(MID,ACCRUAL,CURRENT,LAST_BALANCE,CHANGE_TIME) values(?,?,?,?,?)";
             System.out.println("此次要处理的订单数据记录总共有: "+orderBeanList.size()+" 条");
             ps2 = mysqlconn.prepareStatement(sql);
             ps3 = mysqlconn.prepareStatement(sql2);
+            ps4 = mysqlconn.prepareStatement(sql3);
+            ps5 = mysqlconn.prepareStatement(sql4);
             mysqlconn.setAutoCommit(false);
             mysqlconn.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             for(int i=0;i<orderBeanList.size();i++){
                 OrderBean ob = orderBeanList.get(i);
+                int mid = getUserIdByOpenid(ob.getMoid(),mysqlconn);
                 ps2.setString(1,ob.getCode());
-                ps2.setInt(2,getUserIdByOpenid(ob.getMoid(),mysqlconn));
+                ps2.setInt(2,mid);
                 ps2.setString(3,ob.getOrdertime());
                 ps2.setInt(4,getEquipIdByCode(ob.getEquip_code(),mysqlconn));
                 ps2.setInt(5,ob.getOrder_status());
@@ -245,6 +261,26 @@ public class OrderAct {
                 ps2.setDouble(14,ob.getBill());
                 ps2.setDouble(15,ob.getUnit_price());
 
+                //处理押金数据；
+                if(ob.getOrder_status() == 1){
+                    ps4.setInt(1,mid);
+                    ps4.setString(2,ob.getCode());
+                    ps4.setDouble(3,100);
+                    ps4.setInt(4,1);
+                    ps4.setString(5,ob.getCode());
+                    ps4.setString(6,ob.getOrdertime());
+                    ps4.setInt(7,3);
+                    ps4.addBatch();
+
+                    ps5.setInt(1,mid);
+                    ps5.setDouble(2,100);
+                    ps5.setDouble(3,0);
+                    ps5.setDouble(4,100);
+                    ps5.setString(5,ob.getOrdertime());
+                    ps5.addBatch();
+                }
+
+                //处理分成数据；
                 if(ob.getOrder_status() == 2){
                     ps3.setString(1,ob.getCode());
                     ps3.setString(2,ob.getBw_time());
@@ -262,10 +298,15 @@ public class OrderAct {
                     ps3.setInt(14,1);
                     ps3.addBatch();
                 }
+
                 ps2.addBatch();
             }
             System.out.println("订单数据正在准备中......");
             ps2.executeBatch();
+            System.out.println("用户押金明细数据正在准备中......");
+            ps4.executeBatch();
+            System.out.println("用户押金数据正在准备中......");
+            ps5.executeBatch();
             System.out.println("订单分成数据正在准备中......");
             ps3.executeBatch();
             System.out.println("准备处理数据，请耐心等待，开始处理中......");
@@ -282,10 +323,10 @@ public class OrderAct {
     }
 
 
-    public String beginOldOrderToNew(Connection sqlconn,Connection mysqlconn) throws SQLException {
+    public String beginOldOrderToNew(Connection sqlconn,Connection mysqlconn,int begin,int end) throws SQLException {
         sqlconn = DbConnection.getSqlConnection();
         mysqlconn= DbConnection.getMysqlConnection();
-        pushOldOrderToNew(sqlconn, mysqlconn);
+        pushOldOrderToNew(sqlconn, mysqlconn,begin,end);
         return "订单相关数据已经全部导入。";
     }
 }

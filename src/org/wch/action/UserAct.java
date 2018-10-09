@@ -62,8 +62,9 @@ public class UserAct {
                 }
                 double account_my = rs.getDouble("p_Account_My");
                 double account_tui = rs.getDouble("p_Account_Tui");
-                double account_yajin = rs.getDouble("p_Account_YaJin");
-                double totalMoney = account_my+account_tui+account_yajin;
+               // double account_yajin = rs.getDouble("p_Account_YaJin");
+               // double totalMoney = account_my+account_tui+account_yajin;
+                double totalMoney = account_my+account_tui;
                 userBean.setLastMoney(totalMoney);
                 double p_Account_TiCheng = rs.getDouble("p_Account_TiCheng");
                 double p_Account_TiCheng_Tui = rs.getDouble("p_Account_TiCheng_Tui");
@@ -89,14 +90,14 @@ public class UserAct {
                     + " values (?,?,?,?,?,?,?,?,?,?,?)";    //添加用户记录
             String sql2 = "insert into member_wallet(MID,ACCRUAL,CURRENT,LAST_BALANCE,CHANGE_TIME) values(?,?,?,?,?)";   //添加用户钱包
             String sql3 = "insert into MEMBER_SOURCE(OPENID,QRCODEID) values (?,?)";    //添加公众号用户来源;
-            String sql4 = "insert into MEMBER_DEPOSIT(MID,ACCRUAL,CURRENT,LAST_BALANCE,CHANGE_TIME) values(?,?,?,?,?)";   //添加用户押金;
+          //  String sql4 = "insert into MEMBER_DEPOSIT(MID,ACCRUAL,CURRENT,LAST_BALANCE,CHANGE_TIME) values(?,?,?,?,?)";   //添加用户押金;
 
             mysqlconn.setAutoCommit(false);
             mysqlconn.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             ps2 = mysqlconn.prepareStatement(sql);
             ps3 = mysqlconn.prepareStatement(sql2);
             ps4 = mysqlconn.prepareStatement(sql3);
-            ps5 = mysqlconn.prepareStatement(sql4);
+           // ps5 = mysqlconn.prepareStatement(sql4);
 
             List<UserBean> oldMember_list = getOdbUserData(mssqlconn);
             System.out.println("此次要处理的用户数据记录总共有: "+oldMember_list.size()+" 条");
@@ -118,9 +119,17 @@ public class UserAct {
 
                 //【处理MEMBER_WALLET表数据】
                 ps3.setInt(1,userBean.getId());
-                ps3.setDouble(2,userBean.getLastMoney());
+                if(userBean.getLastMoney()<0) {
+                    ps3.setDouble(2, 0);
+                }else{
+                    ps3.setDouble(2, userBean.getLastMoney());
+                }
                 ps3.setDouble(3,0);
-                ps3.setDouble(4,userBean.getLastMoney());
+                if(userBean.getLastMoney()<0) {
+                    ps3.setDouble(4, 0);
+                }else{
+                    ps3.setDouble(4, userBean.getLastMoney());
+                }
                 ps3.setString(5,setNowDate());
 
                 //【处理MEMBER_SOURCE表数据】

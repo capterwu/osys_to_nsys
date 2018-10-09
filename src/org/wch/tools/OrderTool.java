@@ -13,7 +13,7 @@ public class OrderTool {
         Connection sqlconn = null;
         Connection mysqlconn = null;
         OrderAct act = new OrderAct();
-        String result = act.beginOldOrderToNew(sqlconn,mysqlconn);   //开始处理旧系统订单数据到新系统
+        String result = act.beginOldOrderToNew(sqlconn,mysqlconn,1,50000);   //开始处理旧系统订单数据到新系统
         System.out.println(result);
 
     }

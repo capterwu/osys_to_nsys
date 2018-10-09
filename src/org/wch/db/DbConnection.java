@@ -25,27 +25,27 @@ public class DbConnection {
 
 
      //【嘀嗒测试服务器】开始_
-//     public static String mysql_url = "jdbc:mysql://119.23.208.171:3306/";
-//    public static String mysql_dbName = "ysaas";
-//    public static String mysql_user = "root";
-//    public static String mysql_pass = "123456";
-//    public static String sql_url = "jdbc:sqlserver://119.23.208.171:1433;databaseName=";
-//    public static String mysql_charset = "?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
-//    public static String sql_dbName = "djx_nopublic_20180927";
-//    public static String sql_user = "user20180927";
-//    public static String sql_pass = "user20180927";
+     public static String mysql_url = "jdbc:mysql://119.23.208.171:3306/";
+    public static String mysql_dbName = "ysaas";
+    public static String mysql_user = "root";
+    public static String mysql_pass = "123456";
+    public static String sql_url = "jdbc:sqlserver://119.23.208.171:1433;databaseName=";
+    public static String mysql_charset = "?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
+    public static String sql_dbName = "djx_nopublic_20181008";
+    public static String sql_user = "user20181008";
+    public static String sql_pass = "user20181008";
     //【嘀嗒测试服务器】结束_
 
     //【本地服务器】开始_
-    public static String mysql_url = "jdbc:mysql://localhost:3306/";
-    public static String mysql_dbName = "ysaas";
-    public static String mysql_user = "root";
-    public static String mysql_pass = "8888";
-    public static String sql_url = "jdbc:sqlserver://localhost:1433;databaseName=";
-    public static String mysql_charset = "?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
-    public static String sql_dbName = "djx_nopublic";
-    public static String sql_user = "sa";
-    public static String sql_pass = "1168";
+//    public static String mysql_url = "jdbc:mysql://localhost:3306/";
+//    public static String mysql_dbName = "ysaas";
+//    public static String mysql_user = "root";
+//    public static String mysql_pass = "8888";
+//    public static String sql_url = "jdbc:sqlserver://localhost:1433;databaseName=";
+//    public static String mysql_charset = "?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT";
+//    public static String sql_dbName = "djx_nopublic";
+//    public static String sql_user = "sa";
+//    public static String sql_pass = "1168";
     //【本地服务器】结束_
 
     static PreparedStatement ps = null;
