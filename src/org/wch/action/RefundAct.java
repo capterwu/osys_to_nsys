@@ -1,5 +1,6 @@
 package org.wch.action;
 
+import org.wch.bean.RechargeBean;
 import org.wch.bean.RefundBean;
 import org.wch.db.DbConnection;
 
@@ -20,6 +21,7 @@ public class RefundAct {
     static PreparedStatement ps5 = null;
     static PreparedStatement ps6 = null;
     static ResultSet rs = null;
+
 
     //根据用户OPENID查找用户ID
     public static int getUserIdByOpenid(String openid,Connection mysql_conn){

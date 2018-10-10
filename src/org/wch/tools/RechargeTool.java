@@ -11,7 +11,10 @@ public class RechargeTool {
         Connection sqlconn = null;
         Connection mysqlconn = null;
         RechargeAct ra = new RechargeAct();
-        String result = ra.beginOldRechargeToNew(sqlconn,mysqlconn);
-        System.out.println(result);
+//        String result = ra.beginOldRechargeToNew(sqlconn,mysqlconn);
+//        System.out.println(result);
+
+        String result2 = ra.beginOldYajinToNew(sqlconn,mysqlconn);
+        System.out.println(result2);
     }
 }

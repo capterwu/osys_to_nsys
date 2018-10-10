@@ -111,9 +111,9 @@ public class OrderAct {
                     "      ,[p_AgentMoney3]\n" +
                     "      ,[p_AgentMoney4]\n" +
                     "      ,[p_AgentMoney5]\n" +
-                    "  FROM [DJX_NoPublic_20181008].[dbo].[Plug_GX_Buy_1]" +
-                    "  where p_OrderID not in (SELECT [p_OrderID] FROM [DJX_NoPublic_20181008].[dbo].[Plug_GX_Buy_1] GROUP BY [p_OrderID] HAVING (COUNT(*)>1) )" +
-                    "  AND p_id between "+ begin+" and "+end;
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Buy_1]" +
+                    "  where p_OrderID not in (SELECT [p_OrderID] FROM [DJX_NoPublic].[dbo].[Plug_GX_Buy_1] GROUP BY [p_OrderID] HAVING (COUNT(*)>1) )" ;
+           //         + "  AND p_id between "+ begin+" and "+end;
             ps = mssqlconn.prepareStatement(sql);
             rs = ps.executeQuery();
             System.out.println("开始读取订单数据：");

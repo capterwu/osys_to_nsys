@@ -108,7 +108,6 @@ public class UserAct {
                 ps2.setString(2,userBean.getOpenid());
                 ps2.setString(3,userBean.getNickname());
                 ps2.setString(4,userBean.getHeadPic());
-                System.out.println("userBean.getUserType():"+userBean.getUserType());
                 ps2.setInt(5,userBean.getUserType());
                 ps2.setInt(6,userBean.getGroupType());
                 ps2.setInt(7,userBean.getSex());
