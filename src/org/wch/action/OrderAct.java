@@ -1,6 +1,7 @@
 package org.wch.action;
 
 import org.wch.bean.DepositBean;
+import org.wch.bean.EquipBean;
 import org.wch.bean.OrderBean;
 import org.wch.db.DbConnection;
 
@@ -20,6 +21,7 @@ public class OrderAct {
     static PreparedStatement ps5 = null;
     static PreparedStatement ps6 = null;
     static PreparedStatement ps7 = null;
+    static PreparedStatement ps8 = null;
     static ResultSet rs = null;
 
 
@@ -209,6 +211,58 @@ public class OrderAct {
 //        return depositBeanList;
 //    }
 
+    //查找重复店铺名称的设备
+    public static List getOldReShopDevice(Connection mssqlconn) throws SQLException{
+        List<EquipBean> equipBeanList = new ArrayList<>();
+        try{
+            String sql =
+                    "SELECT [p_DeviceID],[p_shopID],[p_shopName]\n" +
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Device]\n" +
+                    "  where [p_ShopID] IN (\n" +
+                    "SELECT [p_NewID]\n" +
+                    "  FROM [DJX_NoPublic].[dbo].[Plug_GX_Shop]\n" +
+                    "  WHERE [p_ShopName] IN (SELECT p_ShopName  FROM" +
+                            " [DJX_NoPublic].[dbo].[Plug_GX_Shop] GROUP BY p_ShopName  HAVING (COUNT(*)>1)))";
+            ps4 = mssqlconn.prepareStatement(sql);
+            ResultSet ps4Rs = ps4.executeQuery();
+            while(ps4Rs.next()){
+                EquipBean eb = new EquipBean();
+                eb.setShop_code(rs.getString("p_shopID"));
+                eb.setCode(rs.getString("p_DeviceID"));
+                equipBeanList.add(eb);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+        return equipBeanList;
+    }
+
+    //更新重复店铺的订单以及分成数据，一般不要调用该方法
+    public static void processReShopOrderMethod(Connection mssqlconn,Connection mysqlconn) throws SQLException{
+        List<EquipBean> equipBeanList = getOldReShopDevice(mssqlconn);
+        try{
+            String sql = "update rank_shop set bw_shop=?,bk_shop=? where id=? ";
+            String sql2 = "update order_divide set bw_shop=?,bk_shop=?,PLAT_MONEY=?,PROVINCE_MONEY=? " +
+                    " ,CITY_MONEY=?,AREA_MONEY=?,SALES_MONEY=?,SHOP_MONEY=? where CODE=? ";
+            ps5 = mysqlconn.prepareStatement(sql);
+            ps8 = mysqlconn.prepareStatement(sql2);
+            mysqlconn.setAutoCommit(false);
+            mysqlconn.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            for (int i=0;i<equipBeanList.size();i++){
+                EquipBean eb = equipBeanList.get(i);
+                int shopId = getShopIdByCode(eb.getShop_code(),mysqlconn);
+
+            }
+        }catch (SQLException e){
+            mysqlconn.rollback();
+            e.printStackTrace();
+        }finally {
+            DbConnection.closeDB();
+        }
+    }
+
     //导入旧系统订单数据以及分成数据
     public  static void pushOldOrderToNew(Connection mssqlconn,Connection mysqlconn,int begin,int end) throws SQLException{
         long startTime=System.currentTimeMillis();   //获取开始时间
@@ -236,8 +290,8 @@ public class OrderAct {
             System.out.println("此次要处理的订单数据记录总共有: "+orderBeanList.size()+" 条");
             ps2 = mysqlconn.prepareStatement(sql);
             ps3 = mysqlconn.prepareStatement(sql2);
-            ps4 = mysqlconn.prepareStatement(sql3);
-            ps5 = mysqlconn.prepareStatement(sql4);
+//            ps4 = mysqlconn.prepareStatement(sql3);
+//            ps5 = mysqlconn.prepareStatement(sql4);
             mysqlconn.setAutoCommit(false);
             mysqlconn.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             for(int i=0;i<orderBeanList.size();i++){
@@ -261,24 +315,24 @@ public class OrderAct {
                 ps2.setDouble(14,ob.getBill());
                 ps2.setDouble(15,ob.getUnit_price());
 
-                //处理押金数据；
-                if(ob.getOrder_status() == 1){
-                    ps4.setInt(1,mid);
-                    ps4.setString(2,ob.getCode());
-                    ps4.setDouble(3,100);
-                    ps4.setInt(4,1);
-                    ps4.setString(5,ob.getCode());
-                    ps4.setString(6,ob.getOrdertime());
-                    ps4.setInt(7,3);
-                    ps4.addBatch();
-
-                    ps5.setInt(1,mid);
-                    ps5.setDouble(2,100);
-                    ps5.setDouble(3,0);
-                    ps5.setDouble(4,100);
-                    ps5.setString(5,ob.getOrdertime());
-                    ps5.addBatch();
-                }
+//                //处理押金数据；
+//                if(ob.getOrder_status() == 1){
+//                    ps4.setInt(1,mid);
+//                    ps4.setString(2,ob.getCode());
+//                    ps4.setDouble(3,100);
+//                    ps4.setInt(4,1);
+//                    ps4.setString(5,ob.getCode());
+//                    ps4.setString(6,ob.getOrdertime());
+//                    ps4.setInt(7,3);
+//                    ps4.addBatch();
+//
+//                    ps5.setInt(1,mid);
+//                    ps5.setDouble(2,100);
+//                    ps5.setDouble(3,0);
+//                    ps5.setDouble(4,100);
+//                    ps5.setString(5,ob.getOrdertime());
+//                    ps5.addBatch();
+//                }
 
                 //处理分成数据；
                 if(ob.getOrder_status() == 2){
@@ -303,10 +357,10 @@ public class OrderAct {
             }
             System.out.println("订单数据正在准备中......");
             ps2.executeBatch();
-            System.out.println("用户押金明细数据正在准备中......");
-            ps4.executeBatch();
-            System.out.println("用户押金数据正在准备中......");
-            ps5.executeBatch();
+//            System.out.println("用户押金明细数据正在准备中......");
+//            ps4.executeBatch();
+//            System.out.println("用户押金数据正在准备中......");
+//            ps5.executeBatch();
             System.out.println("订单分成数据正在准备中......");
             ps3.executeBatch();
             System.out.println("准备处理数据，请耐心等待，开始处理中......");

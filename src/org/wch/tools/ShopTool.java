@@ -18,6 +18,7 @@ public class ShopTool {
         String result2 = act.beginShopEquipToNew(sqlconn,mysqlconn); //开始处理店铺设备数据到新系统
         System.out.println(result2);
 
-
+//        String result3 = act.beginShopEquipUpdate(sqlconn,mysqlconn); //开始处理重复店铺的设备更新到系统，一般不要调用；
+//        System.out.println(result3);
     }
 }

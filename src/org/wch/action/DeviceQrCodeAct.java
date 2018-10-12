@@ -64,6 +64,7 @@ public class DeviceQrCodeAct {
             ps2.executeBatch();
             conn.commit();
         }catch (SQLException e){
+           // conn.rollback();
             e.printStackTrace();
         }finally {
             DbConnection.closeDB();
@@ -144,6 +145,7 @@ public class DeviceQrCodeAct {
             DbConnection.closeDB();
         }
     }
+
 
 
 
